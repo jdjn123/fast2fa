@@ -7,8 +7,8 @@ import (
     "github.com/pquerna/otp"
     "github.com/pquerna/otp/totp"
 
-    "github.com/yourname/remote-2fa/internal/builder"
-    "github.com/yourname/remote-2fa/internal/sshutil"
+    "github.com/jdjn123/fast2fa/internal/builder"
+    "github.com/jdjn123/fast2fa/internal/sshutil"
 )
 
 type Host struct {

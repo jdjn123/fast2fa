@@ -1,4 +1,4 @@
-module github.com/yourname/remote-2fa
+module github.com/jdjn123/fast2fa
 
 go 1.22
 

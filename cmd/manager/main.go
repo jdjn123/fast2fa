@@ -21,6 +21,26 @@ type Host struct {
 	Password string
 }
 
+// 打印帮助信息
+func init() {
+	flag.Usage = printHelp
+	if len(os.Args) < 2 {
+		printHelp()
+		os.Exit(1)
+	}
+	if os.Args[1] == "--help" {
+		printHelp()
+		os.Exit(0)
+	}
+}
+func printHelp() {
+	fmt.Println(`用法: manager [--hosts 文件名]
+参数:
+  --hosts   指定主机列表文件，格式为 ip,user,password（默认 hosts.csv）
+  --help    显示本帮助信息`)
+}
+
+// 从文件读取主机列表
 func readHostsFromFile(filename string) ([]Host, error) {
 	file, err := os.Open(filename)
 	if err != nil {

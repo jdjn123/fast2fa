@@ -92,12 +92,10 @@ func main() {
 	})
 	fmt.Println("[+] 统一 TOTP Secret:", secret.Secret())
 
-	// 编译目标机程序并显示主机 IP
-	for _, h := range hosts {
-		fmt.Printf("[*] 编译目标机程序: %s\n", h.IP)
-		if err := builder.BuildTargetBinary(secret.Secret()); err != nil {
-			log.Fatalf("编译目标机程序失败 [%s]: %v", h.IP, err)
-		}
+	// 只在本地编译一次
+	fmt.Println("[*] 本地编译目标机程序")
+	if err := builder.BuildTargetBinary(secret.Secret()); err != nil {
+		log.Fatalf("本地编译目标机程序失败: %v", err)
 	}
 
 	// 分发并执行

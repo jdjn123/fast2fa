@@ -1,6 +1,0 @@
-runtime: python312
-
-handlers:
-- url: /.*
-  script: utc-time.py
-  secure: always

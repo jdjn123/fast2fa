@@ -105,8 +105,9 @@ func main() {
 			log.Println("SCP 失败:", err)
 			continue
 		}
-		if err := sshutil.SSHExec(h.IP, h.User, h.Password, "chmod +x /tmp/setup2fa && /tmp/setup2fa"); err != nil {
-			log.Println("执行失败:", err)
+		err := sshutil.SSHExec(h.IP, h.User, h.Password, "chmod +x /tmp/setup2fa && /tmp/setup2fa")
+		if err != nil {
+			log.Printf("执行失败 [%s]: %v\n", h.IP, err)
 			continue
 		}
 	}

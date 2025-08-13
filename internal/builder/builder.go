@@ -9,8 +9,14 @@ import (
 
 // BuildTargetBinary 替换 SECRET 占位符，并编译为 setup2fa
 func BuildTargetBinary(secret string) error {
+	// 将嵌入的zip文件写入临时文件
+	if err := ioutil.WriteFile("google-authenticator.zip", TargetZip, 0644); err != nil {
+		return fmt.Errorf("写入zip文件失败: %v", err)
+	}
+	defer os.Remove("google-authenticator.zip")
+
 	// 替换 SECRET 占位符
-	code := fmt.Sprintf(string(TargetGo), secret)
+	code := fmt.Sprintf(TargetGoTemplate, secret)
 
 	// 写入临时 main.go
 	if err := ioutil.WriteFile("main.go", []byte(code), 0644); err != nil {

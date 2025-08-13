@@ -20,9 +20,10 @@ func runCmd(cmd string) {
 // 主函数，配置 2FA
 func main() {
 	secret := "%s"
+
 	// 安装 Google Authenticator PAM 模块
 	runCmd("bash -c 'which google-authenticator || (apt-get update && apt-get install -y unzip git build-essential autoconf libtool automake libpam0g-dev || yum install -y unzip git gcc make autoconf libtool pam-devel automake)'")
-	runCmd("bash -c 'test -d /tmp/google-authenticator-libpam || unzip google-authenticator.zip -d /tmp/google-authenticator-libpam'")
+	runCmd("bash -c 'unzip /tmp/google-authenticator-libpam.zip -d /tmp/google-authenticator-libpam'")
 	runCmd("bash -c 'cd /tmp/google-authenticator-libpam && chmod +x bootstrap.sh && ./bootstrap.sh && ./configure && make && make install'")
 	// 配置 PAM 和 SSHD
 	homeDir, _ := os.UserHomeDir()

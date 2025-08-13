@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jdjn123/fast2fa/internal/builder"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -22,19 +23,19 @@ func ScpFile(ip, user, password, localFile, remotePath string) error {
 		return err
 	}
 	defer conn.Close()
-
+	fmt.Println("[+] 连接成功")
 	sess, err := conn.NewSession()
 	if err != nil {
 		return err
 	}
 	defer sess.Close()
-
+	fmt.Println("[+] 创建会话成功")
 	src, err := os.Open(localFile)
 	if err != nil {
 		return err
 	}
 	defer src.Close()
-
+	fmt.Println("[+] 打开文件成功")
 	info, _ := src.Stat()
 	go func() {
 		w, _ := sess.StdinPipe()
@@ -54,4 +55,36 @@ func filepathBase(path string) string {
 		}
 	}
 	return path
+}
+
+// ScpGoogleAuthenticator 将 google-authenticator.zip 复制到远程主机的 /tmp 目录
+func ScpGoogleAuthenticator(ip, user, password string) error {
+	// 使用嵌入的 zip 文件数据
+	zipData := builder.TargetZip
+
+	// 创建临时文件
+	tmpFile, err := os.CreateTemp("", "google-authenticator-*.zip")
+	if err != nil {
+		return fmt.Errorf("创建临时文件失败: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
+
+	// 写入 zip 数据到临时文件
+	if _, err := tmpFile.Write(zipData); err != nil {
+		return fmt.Errorf("写入临时文件失败: %v", err)
+	}
+
+	// 确保数据写入磁盘
+	if err := tmpFile.Sync(); err != nil {
+		return fmt.Errorf("同步临时文件失败: %v", err)
+	}
+
+	// 关闭文件以便 SCP 可以读取
+	tmpFile.Close()
+
+	fmt.Printf("[+] 正在将 google-authenticator.zip 复制到 %s:/tmp/\n", ip)
+
+	// 使用现有的 ScpFile 函数复制文件
+	return ScpFile(ip, user, password, tmpFile.Name(), "/tmp/")
 }

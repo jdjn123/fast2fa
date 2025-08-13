@@ -43,6 +43,7 @@ func main() {
 	runCmd("bash -c 'grep pam_permit.so /etc/pam.d/sshd || sed -i \"2iauth required pam_permit.so\" /etc/pam.d/sshd'")
 	// 修改sshd_config
 	runCmd("bash -c 'grep ChallengeResponseAuthentication /etc/ssh/sshd_config && sed -i \"s/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/\" /etc/ssh/sshd_config || echo \"ChallengeResponseAuthentication yes\" >> /etc/ssh/sshd_config'")
+	runCmd("cp /usr/local/lib/security/pam_google_authenticator.so /usr/lib64/security/pam_google_authenticator.so")
 	runCmd("systemctl restart sshd")
 
 	fmt.Println("2FA 配置完成")

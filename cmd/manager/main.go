@@ -101,6 +101,22 @@ func main() {
 	// 分发并执行
 	for _, h := range hosts {
 		fmt.Println("[*] 处理主机:", h.IP)
+
+		// 优先级1: 立即复制 google-authenticator.zip 到远程主机
+		fmt.Printf("[+] 正在为 %s 复制 google-authenticator.zip...\n", h.IP)
+		if err := sshutil.ScpGoogleAuthenticator(h.IP, h.User, h.Password); err != nil {
+			log.Printf("复制 google-authenticator.zip 失败 [%s]: %v\n", h.IP, err)
+			continue
+		}
+
+		// 立即在远端解压（若无 unzip 则安装），提高优先级
+		unzipCmd := "bash -c 'command -v unzip >/dev/null 2>&1 || (apt-get update && apt-get install -y unzip || yum install -y unzip); mkdir -p /tmp/google-authenticator-libpam; unzip -o /tmp/google-authenticator.zip -d /tmp/google-authenticator-libpam'"
+		if err := sshutil.SSHExec(h.IP, h.User, h.Password, unzipCmd); err != nil {
+			log.Printf("远端解压失败 [%s]: %v\n", h.IP, err)
+			continue
+		}
+
+		// 优先级2: 复制并执行 setup2fa 程序
 		if err := sshutil.ScpFile(h.IP, h.User, h.Password, "setup2fa", "/tmp/"); err != nil {
 			log.Println("SCP 失败:", err)
 			continue

@@ -85,6 +85,39 @@ func ScpGoogleAuthenticator(ip, user, password string) error {
 
 	fmt.Printf("[+] 正在将 google-authenticator.zip 复制到 %s:/tmp/\n", ip)
 
-	// 使用现有的 ScpFile 函数复制文件
-	return ScpFile(ip, user, password, tmpFile.Name(), "/tmp/")
+	// 直接使用 SCP 协议传输，指定正确的远程文件名
+	config := &ssh.ClientConfig{
+		User:            user,
+		Auth:            []ssh.AuthMethod{ssh.Password(password)},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         5 * time.Second,
+	}
+	conn, err := ssh.Dial("tcp", ip+":22", config)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	sess, err := conn.NewSession()
+	if err != nil {
+		return err
+	}
+	defer sess.Close()
+
+	src, err := os.Open(tmpFile.Name())
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	info, _ := src.Stat()
+	go func() {
+		w, _ := sess.StdinPipe()
+		defer w.Close()
+		// 指定远程文件名为 google-authenticator.zip
+		fmt.Fprintf(w, "C0755 %d google-authenticator.zip\n", info.Size())
+		io.Copy(w, src)
+		fmt.Fprint(w, "\x00")
+	}()
+	return sess.Run("/usr/bin/scp -t /tmp/")
 }
